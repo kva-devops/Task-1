@@ -14,15 +14,33 @@ public class UserDaoHibernateImpl implements UserDao {
 
     }
 
-
     @Override
     public void createUsersTable() {
-
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        var sql = """
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    name VARCHAR(255),
+                    lastname VARCHAR(255),
+                    age SMALLINT
+                );
+                """;
+        var query = session.createSQLQuery(sql).addEntity(User.class);
+        query.executeUpdate();
+        session.getTransaction().commit();
+        session.close();
     }
 
     @Override
     public void dropUsersTable() {
-
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        var sql = "DROP TABLE IF EXISTS users";
+        var query = session.createSQLQuery(sql).addEntity(User.class);
+        query.executeUpdate();
+        session.getTransaction().commit();
+        session.close();
     }
 
     @Override
