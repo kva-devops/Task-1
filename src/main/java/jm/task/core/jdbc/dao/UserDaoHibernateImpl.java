@@ -6,7 +6,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -15,16 +14,17 @@ public class UserDaoHibernateImpl implements UserDao {
 
     private <T> T tx(final Function<Session, T> command) {
         final Session session = sessionFactory.openSession();
-        final Transaction tx = session.beginTransaction();
-        try {
+        Transaction tx = null;
+        try (session) {
+            tx = session.beginTransaction();
             T rsl = command.apply(session);
             tx.commit();
             return rsl;
         } catch (final Exception e) {
-            session.getTransaction().rollback();
+            if (tx != null) {
+                tx.rollback();
+            }
             throw e;
-        } finally {
-            session.close();
         }
     }
 
